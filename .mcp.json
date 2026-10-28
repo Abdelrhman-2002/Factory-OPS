@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "arcjet": {
+      "type": "http",
+      "url": "https://api.arcjet.com/mcp"
+    },
+    "prisma": {
+      "type": "http",
+      "url": "https://mcp.prisma.io/mcp"
+    },
+    "better-auth": {
+      "type": "http",
+      "url": "https://mcp.better-auth.com/mcp"
+    }
+  }
+}
