@@ -1,6 +1,6 @@
 import { Injectable, NestMiddleware, HttpException } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import arcjet, { shield, fixedWindow } from '@arcjet/node';
+import arcjet, { shield, fixedWindow, slidingWindow } from '@arcjet/node';
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -18,10 +18,20 @@ const aj = arcjet({
   ],
 });
 
+// Sign in gets a much tighter limit to slow down password guessing.
+const signInAj = aj.withRule(
+  slidingWindow({
+    mode: 'LIVE',
+    interval: '10m',
+    max: 10,
+  }),
+);
+
 @Injectable()
 export class ArcjetMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: NextFunction) {
-    const decision = await aj.protect(req);
+    const client = req.originalUrl.startsWith('/api/auth/sign-in') ? signInAj : aj;
+    const decision = await client.protect(req);
 
     if (decision.isDenied()) {
       if (decision.reason.isRateLimit()) {
